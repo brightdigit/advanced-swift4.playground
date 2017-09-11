@@ -16,8 +16,8 @@ public struct Meetup : Codable {
   public init(from decoder: Decoder)  throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     self.name = try container.decode(String.self, forKey: .name)
-    self.description = try container.decode(String.self, forKey: .name)
-    self.time = try container.decode(Date.self, forKey: .name)
+    self.description = try container.decode(String.self, forKey: .description)
+    self.time = try container.decode(Date.self, forKey: .time)
     self.link = try container.decode(URL.self, forKey: .link)
     
     let idString = try container.decode(String.self, forKey: .id)
