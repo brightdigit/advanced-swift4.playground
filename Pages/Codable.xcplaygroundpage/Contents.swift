@@ -2,35 +2,15 @@
 import Foundation
 import PlaygroundSupport
 
-public struct MeetupDecoderError : Error {
-  
-}
-
 public struct Meetup : Codable {
   public let time:Date
   public let name:String
   public let description:String
   public let link:URL
-  public let id:Int
-  
-  public init(from decoder: Decoder)  throws {
-    let container = try decoder.container(keyedBy: CodingKeys.self)
-    self.name = try container.decode(String.self, forKey: .name)
-    self.description = try container.decode(String.self, forKey: .description)
-    self.time = try container.decode(Date.self, forKey: .time)
-    self.link = try container.decode(URL.self, forKey: .link)
-    
-    let idString = try container.decode(String.self, forKey: .id)
-    
-    guard let id = Int(idString) else {
-      throw MeetupDecoderError()
-    }
-    
-    self.id = id
-  }
+  public let id:String
 }
 
-let url = URL(string: "https://api.meetup.com/Lansing-CocoaHeads/events")!
+let url = URL(string: "https://api.meetup.com/A2-Cocoaheads/events?&sign=true&photo-host=public&page=100&status=upcoming,past&only=id,name,description,link,time,yes_rsvp_count,duration")!
 
 let session = URLSession(configuration: .default)
 let decoder = JSONDecoder()
@@ -38,7 +18,6 @@ decoder.dateDecodingStrategy = .millisecondsSince1970
 
 let task = session.dataTask(with: url) { (data, _, error) in
   let meetups = try! decoder.decode([Meetup].self, from: data!)
-  print(meetups)
   PlaygroundPage.current.finishExecution()
 }
 
