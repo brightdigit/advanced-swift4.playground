@@ -19,12 +19,24 @@ public struct Meetup : Codable {
   public let link:URL
   public let id:String
   public let duration:TimeInterval?
+  public let rsvps:Int
+  
+  enum CodingKeys : String, CodingKey {
+    case time
+    case name
+    case description
+    case link
+    case id
+    case duration
+    case rsvps = "yes_rsvp_count"
+  }
 }
 //
 let decoder = JSONDecoder()
 decoder.dateDecodingStrategy = .millisecondsSince1970
 //
-let url = Bundle.main.url(forResource: "a2Cocoaheads", withExtension: "json")!
+
+let url = URL(string: "https://api.meetup.com/A2-Cocoaheads/events?&sign=true&photo-host=public&page=100&status=upcoming,past&only=id,name,description,link,time,yes_rsvp_count,duration")!
 //let text = try! String(contentsOf: url)
 let data = try! Data(contentsOf: url)
 //let task = session.dataTask(with: url) { (data, _, error) in
