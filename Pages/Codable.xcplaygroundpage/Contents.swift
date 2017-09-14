@@ -2,7 +2,7 @@
 import Foundation
 import PlaygroundSupport
 
-public struct Meetup : Codable {
+public struct MeetupEvent : Codable {
   public let time:Date
   public let name:String
   public let description:String
@@ -15,9 +15,25 @@ let url = URL(string: "https://api.meetup.com/A2-Cocoaheads/events?&sign=true&ph
 let session = URLSession(configuration: .default)
 let decoder = JSONDecoder()
 decoder.dateDecodingStrategy = .millisecondsSince1970
+//
+//let task = session.dataTask(with: url) { (data, _, error) in
+//  let json = try! JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions()) as! [[String : Any]]
+//
+//  let meetupEvents = json.map({ (obj) -> MeetupEvent in
+//    let time = Date(timeIntervalSince1970: obj["time"] as! TimeInterval)
+//    let name = obj["name"] as! String
+//    let description = obj["description"] as! String
+//    let link = URL(string: obj["link"] as! String)!
+//    let id = obj["id"] as! String
+//    return MeetupEvent(time: time, name: name, description: description, link: link, id: id)
+//  })
+//  print(meetupEvents)
+//  PlaygroundPage.current.finishExecution()
+//}
+
 
 let task = session.dataTask(with: url) { (data, _, error) in
-  let meetups = try! decoder.decode([Meetup].self, from: data!)
+  let meetupEvents = try! decoder.decode([MeetupEvent].self, from: data!)
   PlaygroundPage.current.finishExecution()
 }
 

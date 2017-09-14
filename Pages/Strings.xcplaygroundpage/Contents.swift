@@ -2,11 +2,18 @@
 import Foundation
 //An Example of how to treat a String as an array of characters
 
-var str = "🎉Welcome to Lansing Cocoaheads, at the 🍎 Store!!🍾"
+func meetupWelcomeMessage(forCityOf cityName: String, locatedAt locationName: String) -> String {
+  return "🎉Welcome to \(cityName) Cocoaheads, at \(locationName)!!🍾"
+}
 
+var str = meetupWelcomeMessage(forCityOf: "Ann Arbor", locatedAt: "🌳🌙")
+
+String(format: "🎉Welcome to %@ Cocoaheads, at %@!!🍾", "Ann Arbor", "🌳🌙")
+
+//NSRegularExpression(pattern: "🎉Welcome to  Cocoaheads, at the \(locationName)!!🍾", options: NSRegularExpression.Options())
 // loop through the characters
 for character in str {
-  print(character)
+  //print(character)
 }
 
 // create an index for the last character
