@@ -56,6 +56,36 @@ guard let apiKey = try? String(contentsOf: meetup_api_key_url).trimmingCharacter
   PlaygroundPage.current.finishExecution()
 }
 
+public protocol Request {
+  associatedtype ResultType
+  func urlWith(apiKey: String) -> URL
+}
+
+
+
+public struct FetchGroupEventsRequest : Request {
+  public typealias ResultType = [MeetupEvent]
+  
+  public let group : MeetupGroup
+  
+  public func urlWith(apiKey: String) -> URL {
+    let urlString = "https://api.meetup.com/\(self.group.urlname)/events?&sign=true&photo-host=public&page=100&status=upcoming,past&only=id,name,description,link,time,yes_rsvp_count,duration"
+    return URL(string: urlString)!
+  }
+}
+
+public struct FindGroupsByTextRequest : Request {
+  public typealias ResultType = [MeetupGroup]
+  
+  public let text : String
+  public let radius : Int
+  public let groupEventMaxCount : Int
+  
+  public func urlWith(apiKey: String) -> URL {
+    let urlString = "https://api.meetup.com/find/groups?&sign=true&photo-host=public&upcoming_events=true&text=\(self.text)&radius=\(self.radius)&page=\(self.groupEventMaxCount)&sign=true&key=\(apiKey)"
+    return URL(string: urlString)!
+  }
+}
 
 public struct MeetupAPI {
   public let apiKey : String
@@ -65,63 +95,95 @@ public struct MeetupAPI {
     decoder.dateDecodingStrategy = .millisecondsSince1970
     return decoder
   }()
-  public func fetchEvents (forGroup group: MeetupGroup, callback: @escaping ((MeetupGroup, Result<[MeetupEvent]>) -> Void)) -> URLSessionDataTask {
-    let urlString = "https://api.meetup.com/\(group.urlname)/events?&sign=true&photo-host=public&page=100&status=upcoming,past&only=id,name,description,link,time,yes_rsvp_count,duration"
-    let url = URL(string: urlString)!
+  
+  public func task<T : Request, U : Codable>(withRequest request: T, _ callback: @escaping ((T, Result<U>) -> Void)) -> URLSessionDataTask where T.ResultType == U   {
+    let url = request.urlWith(apiKey: self.apiKey)
+    
+    print("Call URL For \(url)...")
     let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+      print("Completed URL For \(url)...")
       if let error = error {
-        callback(group, .error(error))
+        callback(request, .error(error))
       } else if let data = data {
-        var events : [MeetupEvent]?
+        var events : U?
         var actualError : Error?
         do {
-          events = try MeetupAPI.decoder.decode([MeetupEvent].self, from: data)
+          events = try MeetupAPI.decoder.decode(U.self, from: data)
         }
         catch let error {
           actualError = error
         }
         if let events = events {
-          callback(group, .result(events))
+          callback(request, .result(events))
         } else if let error = actualError {
-          callback(group, .error(error))
+          callback(request, .error(error))
         } else {
-          callback(group, .error(InvalidResultError()))
+          callback(request, .error(InvalidResultError()))
         }
       } else {
-        callback(group, .error(InvalidResultError()))
+        callback(request, .error(InvalidResultError()))
       }
     }
     task.resume()
     return task
   }
   
+//  public func fetchEvents (forGroup group: MeetupGroup, callback: @escaping ((MeetupGroup, Result<[MeetupEvent]>) -> Void)) -> URLSessionDataTask {
+//    let urlString = "https://api.meetup.com/\(group.urlname)/events?&sign=true&photo-host=public&page=100&status=upcoming,past&only=id,name,description,link,time,yes_rsvp_count,duration"
+//    let url = URL(string: urlString)!
+//    let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+//      if let error = error {
+//        callback(group, .error(error))
+//      } else if let data = data {
+//        var events : [MeetupEvent]?
+//        var actualError : Error?
+//        do {
+//          events = try MeetupAPI.decoder.decode([MeetupEvent].self, from: data)
+//        }
+//        catch let error {
+//          actualError = error
+//        }
+//        if let events = events {
+//          callback(group, .result(events))
+//        } else if let error = actualError {
+//          callback(group, .error(error))
+//        } else {
+//          callback(group, .error(InvalidResultError()))
+//        }
+//      } else {
+//        callback(group, .error(InvalidResultError()))
+//      }
+//    }
+//    task.resume()
+//    return task
+//  }
+//
   public func searchForEvents(withKeyword text: String, andRadius radius: Int, _ callback: @escaping ((Result<[MeetupGroupEvents]>) -> Void)) {
     let maxCount = 20
-    let urlString = "https://api.meetup.com/find/groups?&sign=true&photo-host=public&upcoming_events=true&text=\(text)&radius=\(radius)&page=\(maxCount)&sign=true&key=\(self.apiKey)"
     
-    let url = URL(string: urlString)!
-    
-    let task = URLSession.shared.dataTask(with: url) { (data, _, error) in
+    let request = FindGroupsByTextRequest(text: "cocoaheads", radius: 100, groupEventMaxCount: 20)
+    self.task(withRequest: request) { (request, result) in
+      guard case .result(let groups) = result else {
+        return assertionFailure()
+        
+      }
       var allGroupEvents = [MeetupGroupEvents]()
       var resultError : Error?
       print("Data Downloaded, Parsing...")
       //print(String(data: data!, encoding: String.Encoding.utf8))
-      let groups = try! MeetupAPI.decoder.decode([MeetupGroup].self, from: data!)
       print("Completed")
       let dispatchGroup = DispatchGroup()
       for group in groups {
         print("Pulling Events for \(group.name)...")
         dispatchGroup.enter()
-        guard error == nil else {
-          return dispatchGroup.leave()
-        }
         DispatchQueue.main.async(group: dispatchGroup, qos: .default, flags: DispatchWorkItemFlags(), execute: {
-          self.fetchEvents(forGroup: group, callback: { (group, result) in
-            
+          let request = FetchGroupEventsRequest(group: group)
+          self.task(withRequest: request, { (request, result) in
+
             switch result {
-              
+
             case .result(let groupEvents):
-              allGroupEvents.append((group: group, events: groupEvents))
+              allGroupEvents.append((group: request.group, events: groupEvents))
               break
             case .error(let error):
               resultError = error
@@ -130,9 +192,9 @@ public struct MeetupAPI {
             dispatchGroup.leave()
           })
         })
-        
+
       }
-      
+
       dispatchGroup.notify(queue: .main, execute: {
         if let error = resultError {
           callback(.error(error))
@@ -141,12 +203,12 @@ public struct MeetupAPI {
         }
       })
     }
-    
-    task.resume()
+
   }
 }
 
 let meetupAPI = MeetupAPI(apiKey: apiKey)
+
 meetupAPI.searchForEvents(withKeyword: "cocoaheads", andRadius: 100) { (result) in
   
   print(result)
