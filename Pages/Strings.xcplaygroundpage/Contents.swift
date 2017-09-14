@@ -60,18 +60,22 @@ let appleStore = str[indexAppleStoreStart...indexAppleStoreEnd]
  */
 //: Of course we can loop through the characters
 for character in str {
-  //print(character)
+  print(character, terminator: "")
 }
+print()
 //: But we can do things like use *dropLast* to remove the last two character like an array
 let strWithLessFanFare = str.dropLast(2)
+print(strWithLessFanFare)
 //: We can use *filter* remove all non-ascii characters
 let strWithLessEmoji = str.filter{ $0.unicodeScalars.contains(where: { $0.isASCII })}
+print(strWithLessEmoji)
 //: We can use *reverse*
 let reverseIt = String(str.reversed())
+print(reverseIt)
 //: We can do other things like split the string then mix the characters
 let splitStrings = str.components(separatedBy: ",")
-zip(splitStrings.first!, splitStrings.last!).reduce("") { (current : String, characters : (Character, Character)) -> String in
+let mixedUp = zip(splitStrings.first!, splitStrings.last!).reduce("") { (current : String, characters : (Character, Character)) -> String in
   return current.appending(String(current.count % 2 == 1 ? characters.1 : characters.0))
 }
-
+print(mixedUp)
 //: [Next](@next)

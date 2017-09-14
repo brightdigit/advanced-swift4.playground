@@ -5,6 +5,6 @@
  
  These include:
  * [Strings are a Pain](Strings)
- * [JSON Encoding in Swift 4](Codable)
+ * [Encoding and Decoding Data](Codable)
  * [Concurrency and the Dispatch Queue](Concurrency)
  */
