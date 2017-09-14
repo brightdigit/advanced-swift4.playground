@@ -4,8 +4,6 @@
         <page name='Overview'/>
         <page name='Strings'/>
         <page name='Codable'/>
-        <page name='Sequences'/>
-        <page name='Generics'/>
         <page name='Concurrency'/>
     </pages>
 </playground>

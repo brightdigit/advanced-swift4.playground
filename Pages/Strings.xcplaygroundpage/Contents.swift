@@ -10,7 +10,6 @@ var str = meetupWelcomeMessage(forCityOf: "Ann Arbor", locatedAt: "🌳🌙")
 
 String(format: "🎉Welcome to %@ Cocoaheads, at %@!!🍾", "Ann Arbor", "🌳🌙")
 
-//NSRegularExpression(pattern: "🎉Welcome to  Cocoaheads, at the \(locationName)!!🍾", options: NSRegularExpression.Options())
 // loop through the characters
 for character in str {
   //print(character)

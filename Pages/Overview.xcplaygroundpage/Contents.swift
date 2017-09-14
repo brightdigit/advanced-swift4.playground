@@ -6,10 +6,5 @@
  These include:
  * [Strings and Swift 4](Strings)
  * [JSON Encoding in Swift 4](Codable)
- * [The Advanced Mechanics of Sequence and Collection Types](Sequences)
- * [Generics and Protocols](Generics)
  * [Concurrency and the Dispatch Queue](Concurrency)
  */
-
-let str = "asdfasdf"
-
