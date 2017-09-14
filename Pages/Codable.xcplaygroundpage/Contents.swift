@@ -47,6 +47,10 @@
  ````
  Let's setup our `URL` and `URLSession`.
  */
+import Foundation
+import PlaygroundSupport
+
+PlaygroundPage.current.needsIndefiniteExecution = true
 let url = URL(string: "https://api.meetup.com/A2-Cocoaheads/events?&sign=true&photo-host=public&page=100&status=upcoming,past&only=id,name,description,link,time,yes_rsvp_count,duration")!
 let session = URLSession(configuration: .default)
 //: Next we create a `JSONDecoder`
